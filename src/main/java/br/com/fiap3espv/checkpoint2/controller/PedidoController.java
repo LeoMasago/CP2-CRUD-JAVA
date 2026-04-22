@@ -3,7 +3,6 @@ package br.com.fiap3espv.checkpoint2.controller;
 import br.com.fiap3espv.checkpoint2.model.Pedido;
 import br.com.fiap3espv.checkpoint2.service.PedidoService;
 import br.com.fiap3espv.checkpoint2.exception.EntityNotFoundException;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

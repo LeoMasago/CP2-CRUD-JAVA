@@ -16,7 +16,6 @@ API ReST desenvolvida com Spring Boot e MongoDB para cadastro e gerenciamento de
 - Spring Boot 4.0.5
 - Spring Data MongoDB
 - Lombok
-- Bean Validation
 
 ## Endpoints
 
