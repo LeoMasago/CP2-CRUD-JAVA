@@ -42,6 +42,7 @@ public class PedidoController {
         try {
             return ResponseEntity.status(HttpStatus.CREATED).body(pedidoService.criar(pedido));
         } catch (IllegalArgumentException e) {
+            //retorna 400 se algum campo estiver inválido com a mensagem passada em service
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
@@ -54,6 +55,7 @@ public class PedidoController {
             //retorna 404 se o pedido não existir
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (IllegalArgumentException e) {
+            //retorna 400 se algum campo estiver inválido com a mensagem passada em service
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }

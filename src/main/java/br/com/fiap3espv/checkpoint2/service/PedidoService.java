@@ -26,6 +26,7 @@ public class PedidoService {
     }
 
     public Pedido criar(Pedido pedido) {
+        //fazendo todas as verificações e lançando exceções ao criar pedidos
         if (pedido.getClienteNome() == null || pedido.getClienteNome().isBlank()) {
             throw new IllegalArgumentException("O nome do cliente é obrigatório");
         }
@@ -44,6 +45,7 @@ public class PedidoService {
         Pedido pedido = pedidoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado com id: " + id));
 
+        //fazendo as verificações e retornando as exceções
         if (pedidoAtualizado.getClienteNome() != null) {
             if (pedidoAtualizado.getClienteNome().isBlank()) {
                 throw new IllegalArgumentException("O nome do cliente não pode ser vazio");
