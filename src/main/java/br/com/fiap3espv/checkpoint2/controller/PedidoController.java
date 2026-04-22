@@ -2,6 +2,7 @@ package br.com.fiap3espv.checkpoint2.controller;
 
 import br.com.fiap3espv.checkpoint2.model.Pedido;
 import br.com.fiap3espv.checkpoint2.service.PedidoService;
+import br.com.fiap3espv.checkpoint2.exception.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,34 +19,53 @@ public class PedidoController {
     private PedidoService pedidoService;
 
     @GetMapping
-    public List<Pedido> listarTodos() {
-        return pedidoService.listarTodos();
+    public ResponseEntity<List<Pedido>> listarTodos() {
+        try {
+            return ResponseEntity.ok(pedidoService.listarTodos());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Pedido> buscarPorId(@PathVariable String id) {
-        return pedidoService.buscarPorId(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<?> buscarPorId(@PathVariable String id) {
+        try {
+            return ResponseEntity.ok(pedidoService.buscarPorId(id));
+        } catch (EntityNotFoundException e) {
+            //retorna 404 se o pedido não existir
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
     }
 
     @PostMapping
-    public ResponseEntity<Pedido> criar(@Valid @RequestBody Pedido pedido) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(pedidoService.criar(pedido));
+    public ResponseEntity<?> criar(@RequestBody Pedido pedido) {
+        try {
+            return ResponseEntity.status(HttpStatus.CREATED).body(pedidoService.criar(pedido));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Pedido> atualizar(@PathVariable String id, @RequestBody Pedido pedido) {
-        return pedidoService.atualizar(id, pedido)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<?> atualizar(@PathVariable String id, @RequestBody Pedido pedido) {
+        try {
+            return ResponseEntity.ok(pedidoService.atualizar(id, pedido));
+        } catch (EntityNotFoundException e) {
+            //retorna 404 se o pedido não existir
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletar(@PathVariable String id) {
-        if (pedidoService.deletar(id)) {
+    public ResponseEntity<?> deletar(@PathVariable String id) {
+        try {
+            pedidoService.deletar(id);
             return ResponseEntity.noContent().build();
+        } catch (EntityNotFoundException e) {
+            //retorna 404 se o pedido não existir
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
-        return ResponseEntity.notFound().build();
     }
 }

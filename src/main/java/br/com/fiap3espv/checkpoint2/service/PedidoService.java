@@ -2,12 +2,12 @@ package br.com.fiap3espv.checkpoint2.service;
 
 import br.com.fiap3espv.checkpoint2.model.Pedido;
 import br.com.fiap3espv.checkpoint2.repository.PedidoRepository;
+import br.com.fiap3espv.checkpoint2.exception.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class PedidoService {
@@ -19,32 +19,51 @@ public class PedidoService {
         return pedidoRepository.findAll();
     }
 
-    public Optional<Pedido> buscarPorId(String id) {
-        return pedidoRepository.findById(id);
+    public Pedido buscarPorId(String id) {
+        //se o pedido existir, retorna, caso contrário, lança exceção
+        return pedidoRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado com id: " + id));
     }
 
     public Pedido criar(Pedido pedido) {
+        if (pedido.getClienteNome() == null || pedido.getClienteNome().isBlank()) {
+            throw new IllegalArgumentException("O nome do cliente é obrigatório");
+        }
+        if (pedido.getValorTotal() == null) {
+            throw new IllegalArgumentException("O valor total é obrigatório");
+        }
+        if (pedido.getValorTotal() < 0) {
+            throw new IllegalArgumentException("O valor total não pode ser negativo");
+        }
         pedido.setDataPedido(LocalDate.now());
         return pedidoRepository.save(pedido);
     }
 
-    public Optional<Pedido> atualizar(String id, Pedido pedidoAtualizado) {
-        return pedidoRepository.findById(id).map(pedido -> {
-            if (pedidoAtualizado.getClienteNome() != null) {
-                pedido.setClienteNome(pedidoAtualizado.getClienteNome());
+    public Pedido atualizar(String id, Pedido pedidoAtualizado) {
+        //se o pedido existir, retorna, caso contrário, lança exceção
+        Pedido pedido = pedidoRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado com id: " + id));
+
+        if (pedidoAtualizado.getClienteNome() != null) {
+            if (pedidoAtualizado.getClienteNome().isBlank()) {
+                throw new IllegalArgumentException("O nome do cliente não pode ser vazio");
             }
-            if (pedidoAtualizado.getValorTotal() != null) {
-                pedido.setValorTotal(pedidoAtualizado.getValorTotal());
+            pedido.setClienteNome(pedidoAtualizado.getClienteNome());
+        }
+        if (pedidoAtualizado.getValorTotal() != null) {
+            if (pedidoAtualizado.getValorTotal() < 0) {
+                throw new IllegalArgumentException("O valor total não pode ser negativo");
             }
-            return pedidoRepository.save(pedido);
-        });
+            pedido.setValorTotal(pedidoAtualizado.getValorTotal());
+        }
+
+        return pedidoRepository.save(pedido);
     }
 
-    public boolean deletar(String id) {
-        if (pedidoRepository.existsById(id)) {
-            pedidoRepository.deleteById(id);
-            return true;
+    public void deletar(String id) {
+        if (!pedidoRepository.existsById(id)) {
+            throw new EntityNotFoundException("Pedido não encontrado com id: " + id);
         }
-        return false;
+        pedidoRepository.deleteById(id);
     }
 }
