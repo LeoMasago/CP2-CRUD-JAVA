@@ -6,6 +6,7 @@ import br.com.fiap3espv.checkpoint2.exception.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -15,6 +16,25 @@ public class PedidoService {
     @Autowired
     private PedidoRepository pedidoRepository;
 
+    //funções auxiliares para evitar redundância
+    //verificando nome utilizando regex e lançando exceção caso caia no if
+    private void validarNome(String nome) {
+        if (!nome.matches("[a-zA-ZÀ-ÿ\\s]+")) {
+            throw new IllegalArgumentException("O nome do cliente deve conter apenas letras");
+        }
+    }
+
+    //verificando se o valor é negativo ou tem mais de 2 casas decimais
+    private void validarValorTotal(Double valor) {
+        if (valor < 0) {
+            throw new IllegalArgumentException("O valor total não pode ser negativo");
+        }
+        if (new BigDecimal(Double.toString(valor)).scale() > 2) {
+            throw new IllegalArgumentException("O valor total deve ter no máximo 2 casas decimais");
+        }
+    }
+
+    //CRUD
     public List<Pedido> listarTodos() {
         return pedidoRepository.findAll();
     }
@@ -30,12 +50,11 @@ public class PedidoService {
         if (pedido.getClienteNome() == null || pedido.getClienteNome().isBlank()) {
             throw new IllegalArgumentException("O nome do cliente é obrigatório");
         }
+        validarNome(pedido.getClienteNome());
         if (pedido.getValorTotal() == null) {
             throw new IllegalArgumentException("O valor total é obrigatório");
         }
-        if (pedido.getValorTotal() < 0) {
-            throw new IllegalArgumentException("O valor total não pode ser negativo");
-        }
+        validarValorTotal(pedido.getValorTotal());
         pedido.setDataPedido(LocalDate.now());
         return pedidoRepository.save(pedido);
     }
@@ -50,12 +69,11 @@ public class PedidoService {
             if (pedidoAtualizado.getClienteNome().isBlank()) {
                 throw new IllegalArgumentException("O nome do cliente não pode ser vazio");
             }
+            validarNome(pedidoAtualizado.getClienteNome());
             pedido.setClienteNome(pedidoAtualizado.getClienteNome());
         }
         if (pedidoAtualizado.getValorTotal() != null) {
-            if (pedidoAtualizado.getValorTotal() < 0) {
-                throw new IllegalArgumentException("O valor total não pode ser negativo");
-            }
+            validarValorTotal(pedidoAtualizado.getValorTotal());
             pedido.setValorTotal(pedidoAtualizado.getValorTotal());
         }
 
